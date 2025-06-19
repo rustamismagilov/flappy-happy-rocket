@@ -2,23 +2,23 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class Mover : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
-    [SerializeField] float moveForce = 1f;
+    [SerializeField] float moveForce = 2f;
     Vector2 moveInput;
 
     [Header("Thrust")]
-    [SerializeField] float thrustForce = 1500f;
+    [SerializeField] float thrustForce = 2000f;
     bool thrustInput;
 
     [Header("Camera")]
     [SerializeField] float fieldOfViewDefault = 50f;
     [SerializeField] float fieldOfViewOnThrust = 100f;
-    [SerializeField] float fieldOfViewDuration = 2f;
-    [SerializeField] CinemachineCamera myCinemachineCamera;
-    [SerializeField] Transform cameraTransform;
+    [SerializeField] float fieldOfViewDuration = 0.1f;
+    bool isCameraControlActive = false;
 
+    CinemachineCamera myCinemachineCamera;
     Rigidbody myRigidody;
     ParticleSystem myParticleSystem;
 
@@ -29,7 +29,6 @@ public class Mover : MonoBehaviour
         myRigidody = GetComponent<Rigidbody>();
         myParticleSystem = GetComponentInChildren<ParticleSystem>();
         myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
-        cameraTransform = myCinemachineCamera.transform;
 
         myCinemachineCamera.Lens.FieldOfView = fieldOfViewDefault;
     }
@@ -39,27 +38,13 @@ public class Mover : MonoBehaviour
     {
         UpdateMove();
         UpdateThrust();
+        UpdateCamera();
     }
 
     // on move
     void OnMove(InputValue value)
     {
-        // input
         moveInput = value.Get<Vector2>();
-
-        //Debug.Log(moveInput.x + " " + moveInput.y);
-        //Debug.Log(transform.rotation.x + " " + transform.rotation.y + " " + transform.rotation.y);
-
-        // set velocity
-        //Vector3 velocity = new Vector3(moveInput.x * currentSpeed, myRigidody.linearVelocity.y, moveInput.y * currentSpeed);
-        //myRigidody.linearVelocity = velocity;
-
-        // set rotation
-        //Vector3 rotation = new Vector3(transform.rotation.x + (moveInput.x * 0.1f), transform.rotation.y, transform.rotation.x + (moveInput.y * 0.1f));
-        //transform.rotation = Quaternion.Euler(rotation);
-
-        //hasHorizontalSpeed = Mathf.Abs(myRigidody.linearVelocity.x) > Mathf.Epsilon; 
-        //animator.SetBool("isWalking", hasHorizontalSpeed);
     }
 
     // on jump
@@ -68,27 +53,16 @@ public class Mover : MonoBehaviour
         thrustInput = value.isPressed;
     }
 
-    // update thrust
-    void UpdateThrust()
+    // on camera
+    void OnCamera(InputValue value)
     {
-        if (thrustInput)
-        {
-            //Debug.Log("thrusting");
-            myRigidody.AddRelativeForce(Vector3.up * thrustForce);
-
-            myParticleSystem.Play();
-            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewOnThrust, fieldOfViewDuration);
-        }
-        else
-        {
-            myParticleSystem.Stop();
-            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
-        }
+        isCameraControlActive = value.isPressed;
     }
 
-    // update move
+    // checking is moving
     void UpdateMove()
     {
+        /*
         if (moveInput == Vector2.zero) return;
 
         // Get camera's current forward and right vectors
@@ -108,6 +82,17 @@ public class Mover : MonoBehaviour
 
         // Optional: Apply forward thrust (or adjust this if you want force instead)
         myRigidody.AddForce(moveDir * moveForce);
+        */
+
+
+
+        if (moveInput == Vector2.zero) return;
+
+        // apply rotation
+        if (moveInput.x > 0) ApplyRotation(Vector3.right * moveForce);
+        else if (moveInput.x < 0) ApplyRotation(Vector3.left * moveForce);
+        if (moveInput.y > 0) ApplyRotation(Vector3.forward * moveForce);
+        else if (moveInput.y < 0) ApplyRotation(Vector3.back * moveForce);
     }
 
 
@@ -117,6 +102,34 @@ public class Mover : MonoBehaviour
         myRigidody.freezeRotation = true;  // freezing rotation so we can manually rotate
         transform.Rotate(rotation);
         myRigidody.freezeRotation = false;  // unfreezing rotation so the physics system can take over
+    }
+
+
+    // check if is thrusting
+    void UpdateThrust()
+    {
+        if (thrustInput)
+        {
+            // constantly add force
+            myRigidody.AddRelativeForce(Vector3.up * thrustForce);
+            myParticleSystem.Play();
+            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewOnThrust, fieldOfViewDuration);
+        }
+        else
+        {
+            // stop force
+            myParticleSystem.Stop();
+            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
+        }
+    }
+
+
+    // enable camera rotation only with right click
+    void UpdateCamera()
+    {
+        if (isCameraControlActive) myCinemachineCamera.GetComponent<CinemachinePanTilt>().enabled = true;
+        else myCinemachineCamera.GetComponent<CinemachinePanTilt>().enabled = false;
+
     }
 
 }
