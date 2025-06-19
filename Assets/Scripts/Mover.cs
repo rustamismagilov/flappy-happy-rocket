@@ -16,10 +16,11 @@ public class Mover : MonoBehaviour
     [SerializeField] float fieldOfViewDefault = 50f;
     [SerializeField] float fieldOfViewOnThrust = 100f;
     [SerializeField] float fieldOfViewDuration = 2f;
+    [SerializeField] CinemachineCamera myCinemachineCamera;
+    [SerializeField] Transform cameraTransform;
 
     Rigidbody myRigidody;
     ParticleSystem myParticleSystem;
-    CinemachineCamera myCinemachineCamera;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -28,6 +29,7 @@ public class Mover : MonoBehaviour
         myRigidody = GetComponent<Rigidbody>();
         myParticleSystem = GetComponentInChildren<ParticleSystem>();
         myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+        cameraTransform = myCinemachineCamera.transform;
 
         myCinemachineCamera.Lens.FieldOfView = fieldOfViewDefault;
     }
@@ -83,34 +85,31 @@ public class Mover : MonoBehaviour
             myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
         }
     }
+
     // update move
     void UpdateMove()
     {
-        //Vector3 rotation = new Vector3(transform.rotation.x + (moveInput.x * 0.5f), transform.rotation.y, transform.rotation.x + (moveInput.y * 0.5f));
-        //transform.rotation = Quaternion.Euler(rotation);
+        if (moveInput == Vector2.zero) return;
 
-        if (moveInput.x > 0)
-        {
-            //Debug.Log("Right");
-            transform.Rotate(Vector3.right * moveForce);
-        }
-        else if (moveInput.x < 0)
-        {
-            //Debug.Log("Left");
-            transform.Rotate(Vector3.left * moveForce);
-        }
+        // Get camera's current forward and right vectors
+        Vector3 camForward = myCinemachineCamera.transform.forward;
+        Vector3 camRight = myCinemachineCamera.transform.right;
 
-        if (moveInput.y > 0)
-        {
-            //Debug.Log("Forward");
-            transform.Rotate(Vector3.forward * moveForce);
-        }
-        else if (moveInput.y < 0)
-        {
-            //Debug.Log("Back");
-            ApplyRotation(Vector3.back * moveForce);
-        }
+        // Flatten the vectors to avoid tilting
+        camForward.Normalize();
+        camRight.Normalize();
+
+        // Calculate movement direction based on input and camera orientation
+        Vector3 moveDir = camRight * moveInput.x + camForward * moveInput.y;
+
+        // Rotate rocket to face direction (optional)
+        Quaternion targetRotation = Quaternion.LookRotation(moveDir);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * 5f);
+
+        // Optional: Apply forward thrust (or adjust this if you want force instead)
+        myRigidody.AddForce(moveDir * moveForce);
     }
+
 
     // because we call it every time and we need to know which sign it has at this exact frame
     void ApplyRotation(Vector3 rotation)
