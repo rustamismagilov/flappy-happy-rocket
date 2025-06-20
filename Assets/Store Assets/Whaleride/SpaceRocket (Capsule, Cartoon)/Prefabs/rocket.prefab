@@ -5087,8 +5087,10 @@ MonoBehaviour:
   thrustForce: 2000
   thrustAudioClip: {fileID: 8300000, guid: f3e7831327dea4e41914184fd554ab07, type: 3}
   fieldOfViewDefault: 50
-  fieldOfViewOnThrust: 100
-  fieldOfViewDuration: 0.1
+  fieldOfViewOnThrust: 80
+  fieldOfViewDuration: 2
+  cameraSensitivityX: 0.5
+  cameraSensitivityY: 0.5
 --- !u!114 &6764480415250288319
 MonoBehaviour:
   m_ObjectHideFlags: 0
