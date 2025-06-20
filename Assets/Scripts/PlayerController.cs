@@ -17,8 +17,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float fieldOfViewDefault = 50f;
     [SerializeField] float fieldOfViewOnThrust = 80f;
     [SerializeField] float fieldOfViewDuration = 2f;
-    [SerializeField] float cameraSensitivityX = 0.5f;
-    [SerializeField] float cameraSensitivityY = 0.5f;
+    [SerializeField] float cameraSensitivityX = 0.2f;
+    [SerializeField] float cameraSensitivityY = 0.2f;
 
     bool isCameraControlActive = false;
     Vector2 mouseInitialPosition;
@@ -145,7 +145,7 @@ public class PlayerController : MonoBehaviour
         {
             Vector2 mousePosition = Mouse.current.position.ReadValue();
             Vector2 mouseDelta = mouseInitialPosition - mousePosition;
-            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityX), cameraInitialRotation.eulerAngles.y + (mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
+            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityY), cameraInitialRotation.eulerAngles.y + (mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
         }
 
     }
