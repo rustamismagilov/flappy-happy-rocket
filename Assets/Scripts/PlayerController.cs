@@ -145,7 +145,7 @@ public class PlayerController : MonoBehaviour
         {
             Vector2 mousePosition = Mouse.current.position.ReadValue();
             Vector2 mouseDelta = mouseInitialPosition - mousePosition;
-            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityY), cameraInitialRotation.eulerAngles.y + (mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
+            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityY), cameraInitialRotation.eulerAngles.y + (-mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
         }
 
     }
