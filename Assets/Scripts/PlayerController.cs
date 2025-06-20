@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Thrust")]
     [SerializeField] float thrustForce = 2000f;
+    [SerializeField] AudioClip thrustAudioClip;
     bool thrustInput;
 
     [Header("Camera")]
@@ -19,6 +20,7 @@ public class PlayerController : MonoBehaviour
     bool isCameraControlActive = false;
 
     CinemachineCamera myCinemachineCamera;
+    AudioSource myAudioSource;
     Rigidbody myRigidody;
     ParticleSystem myParticleSystem;
 
@@ -29,6 +31,7 @@ public class PlayerController : MonoBehaviour
         myRigidody = GetComponent<Rigidbody>();
         myParticleSystem = GetComponentInChildren<ParticleSystem>();
         myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+        myAudioSource = GetComponent<AudioSource>();
 
         myCinemachineCamera.Lens.FieldOfView = fieldOfViewDefault;
     }
@@ -112,14 +115,17 @@ public class PlayerController : MonoBehaviour
         {
             // constantly add force
             myRigidody.AddRelativeForce(Vector3.up * thrustForce);
-            myParticleSystem.Play();
+
             myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewOnThrust, fieldOfViewDuration);
+            if (!myParticleSystem.isPlaying) myParticleSystem.Play();
+            if (!myAudioSource.isPlaying) myAudioSource.PlayOneShot(thrustAudioClip);
         }
         else
         {
             // stop force
-            myParticleSystem.Stop();
             myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
+            myParticleSystem.Stop();
+            myAudioSource.Stop();
         }
     }
 
