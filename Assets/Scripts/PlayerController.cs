@@ -15,9 +15,14 @@ public class PlayerController : MonoBehaviour
 
     [Header("Camera")]
     [SerializeField] float fieldOfViewDefault = 50f;
-    [SerializeField] float fieldOfViewOnThrust = 100f;
-    [SerializeField] float fieldOfViewDuration = 0.1f;
+    [SerializeField] float fieldOfViewOnThrust = 80f;
+    [SerializeField] float fieldOfViewDuration = 2f;
+    [SerializeField] float cameraSensitivityX = 0.5f;
+    [SerializeField] float cameraSensitivityY = 0.5f;
+
     bool isCameraControlActive = false;
+    Vector2 mouseInitialPosition;
+    Quaternion cameraInitialRotation;
 
     CinemachineCamera myCinemachineCamera;
     AudioSource myAudioSource;
@@ -44,6 +49,7 @@ public class PlayerController : MonoBehaviour
         UpdateCamera();
     }
 
+
     // on move
     void OnMove(InputValue value)
     {
@@ -60,6 +66,11 @@ public class PlayerController : MonoBehaviour
     void OnCamera(InputValue value)
     {
         isCameraControlActive = value.isPressed;
+        if (isCameraControlActive)
+        {
+            mouseInitialPosition = Mouse.current.position.ReadValue();
+            cameraInitialRotation = myCinemachineCamera.transform.rotation;
+        }
     }
 
     // checking is moving
@@ -98,7 +109,6 @@ public class PlayerController : MonoBehaviour
         else if (moveInput.y < 0) ApplyRotation(Vector3.back * moveForce);
     }
 
-
     // because we call it every time and we need to know which sign it has at this exact frame
     void ApplyRotation(Vector3 rotation)
     {
@@ -106,7 +116,6 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(rotation);
         myRigidody.freezeRotation = false;  // unfreezing rotation so the physics system can take over
     }
-
 
     // check if is thrusting
     void UpdateThrust()
@@ -129,12 +138,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     // enable camera rotation only with right click
     void UpdateCamera()
     {
-        if (isCameraControlActive) myCinemachineCamera.GetComponent<CinemachinePanTilt>().enabled = true;
-        else myCinemachineCamera.GetComponent<CinemachinePanTilt>().enabled = false;
+        if (isCameraControlActive)
+        {
+            Vector2 mousePosition = Mouse.current.position.ReadValue();
+            Vector2 mouseDelta = mouseInitialPosition - mousePosition;
+            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityX), cameraInitialRotation.eulerAngles.y + (mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
+        }
 
     }
 
