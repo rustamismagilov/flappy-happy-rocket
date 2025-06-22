@@ -1,17 +1,24 @@
 using Unity.Cinemachine;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.Rendering.DebugUI;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
     [SerializeField] float moveForce = 2f;
+    [HideInInspector] public Vector2? moveForced;
     Vector2 moveInput;
+    bool moveEnabled = false;
 
     [Header("Thrust")]
-    [SerializeField] float thrustForce = 2000f;
+    [SerializeField] float thrustPower = 2000f;
+    [HideInInspector] public float? thrustPowerForced;
     [SerializeField] AudioClip thrustAudioClip;
+    [HideInInspector] public bool? thrustForced;
     bool thrustInput;
+    bool thrustEnabled = false;
 
     [Header("Camera")]
     [SerializeField] float fieldOfViewDefault = 50f;
@@ -19,26 +26,29 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float fieldOfViewDuration = 2f;
     [SerializeField] float cameraSensitivityX = 0.2f;
     [SerializeField] float cameraSensitivityY = 0.2f;
+    [SerializeField] bool controlYMovement = true;
+    [HideInInspector] public Quaternion? cameraForced;
+    bool cameraEnabled = false;
 
     bool isCameraControlActive = false;
     Vector2 mouseInitialPosition;
     Quaternion cameraInitialRotation;
 
     CinemachineCamera myCinemachineCamera;
-    AudioSource myAudioSource;
     Rigidbody myRigidody;
+    AudioSource myAudioSource;
     ParticleSystem myParticleSystem;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         myRigidody = GetComponent<Rigidbody>();
         myParticleSystem = GetComponentInChildren<ParticleSystem>();
-        myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         myAudioSource = GetComponent<AudioSource>();
 
-        myCinemachineCamera.Lens.FieldOfView = fieldOfViewDefault;
+        if (myCinemachineCamera) myCinemachineCamera.Lens.FieldOfView = fieldOfViewDefault;
     }
 
     // Update is called once per time
@@ -50,7 +60,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-    // on move
+    // on camera
     void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
@@ -73,40 +83,54 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // enable camera
+    public void EnableMove()
+    {
+        moveEnabled = true;
+    }
+    // disable camera
+    public void DisableMove()
+    {
+        moveEnabled = false;
+    }
+
+    // enable thrust
+    public void EnableThrust()
+    {
+        thrustEnabled = true;
+    }
+    // disable thrust
+    public void DisableThrust()
+    {
+        thrustEnabled = false;
+    }
+
+    // enable camera
+    public void EnableCamera()
+    {
+        cameraEnabled = true;
+    }
+    // disable camera
+    public void DisableCamera()
+    {
+        cameraEnabled = false;
+    }
+
     // checking is moving
     void UpdateMove()
     {
-        /*
-        if (moveInput == Vector2.zero) return;
+        Vector2 move;
+        if (moveForced != null) move = (Vector2)moveForced;
+        else if (!moveEnabled) move = new Vector2(0, 0);
+        else move = moveInput;
 
-        // Get camera's current forward and right vectors
-        Vector3 camForward = myCinemachineCamera.transform.forward;
-        Vector3 camRight = myCinemachineCamera.transform.right;
+        if (move == Vector2.zero) return;
 
-        // Flatten the vectors to avoid tilting
-        camForward.Normalize();
-        camRight.Normalize();
-
-        // Calculate movement direction based on input and camera orientation
-        Vector3 moveDir = camRight * moveInput.x + camForward * moveInput.y;
-
-        // Rotate rocket to face direction (optional)
-        Quaternion targetRotation = Quaternion.LookRotation(moveDir);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.fixedDeltaTime * 5f);
-
-        // Optional: Apply forward thrust (or adjust this if you want force instead)
-        myRigidody.AddForce(moveDir * moveForce);
-        */
-
-
-
-        if (moveInput == Vector2.zero) return;
-
-        // apply rotation
-        if (moveInput.x > 0) ApplyRotation(Vector3.right * moveForce);
-        else if (moveInput.x < 0) ApplyRotation(Vector3.left * moveForce);
-        if (moveInput.y > 0) ApplyRotation(Vector3.forward * moveForce);
-        else if (moveInput.y < 0) ApplyRotation(Vector3.back * moveForce);
+        // apply rotation (considering the camera view)
+        if (move.x > 0) ApplyRotation(Vector3.back * moveForce);
+        else if (move.x < 0) ApplyRotation(Vector3.forward * moveForce);
+        if (move.y > 0) ApplyRotation(Vector3.right * moveForce);
+        else if (move.y < 0) ApplyRotation(Vector3.left * moveForce);
     }
 
     // because we call it every time and we need to know which sign it has at this exact frame
@@ -120,34 +144,77 @@ public class PlayerController : MonoBehaviour
     // check if is thrusting
     void UpdateThrust()
     {
-        if (thrustInput)
+        bool thrust;
+        if (thrustForced != null) thrust = (bool)thrustForced;
+        else if (!thrustEnabled) thrust = false;
+        else thrust = thrustInput;
+
+        if (thrust)
         {
             // constantly add force
-            myRigidody.AddRelativeForce(Vector3.up * thrustForce);
+            float force = thrustPowerForced != null ? (float)thrustPowerForced : thrustPower;
+            myRigidody.AddRelativeForce(Vector3.up * (force));
 
-            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewOnThrust, fieldOfViewDuration);
+            if (myCinemachineCamera) myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewOnThrust, fieldOfViewDuration);
             if (!myParticleSystem.isPlaying) myParticleSystem.Play();
             if (!myAudioSource.isPlaying) myAudioSource.PlayOneShot(thrustAudioClip);
         }
         else
         {
             // stop force
-            myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
+            if (myCinemachineCamera) myCinemachineCamera.Lens.FieldOfView = Mathf.SmoothStep(myCinemachineCamera.Lens.FieldOfView, fieldOfViewDefault, fieldOfViewDuration);
             myParticleSystem.Stop();
-            myAudioSource.Stop();
+            //myAudioSource.Stop();
         }
     }
 
     // enable camera rotation only with right click
     void UpdateCamera()
     {
-        if (isCameraControlActive)
+        bool cameraControlActive = cameraEnabled ? isCameraControlActive : false;
+
+        // move camera
+        if (cameraForced != null)
+        {
+            myCinemachineCamera.transform.rotation = (Quaternion)cameraForced;
+        }
+        else if (cameraControlActive)
         {
             Vector2 mousePosition = Mouse.current.position.ReadValue();
             Vector2 mouseDelta = mouseInitialPosition - mousePosition;
-            myCinemachineCamera.transform.rotation = Quaternion.Euler(cameraInitialRotation.eulerAngles.x + (mouseDelta.y * cameraSensitivityY), cameraInitialRotation.eulerAngles.y + (-mouseDelta.x * cameraSensitivityX), cameraInitialRotation.eulerAngles.z);
+
+            float xAngle = NormalizeAngle(cameraInitialRotation.eulerAngles.x);
+            float yAngle = NormalizeAngle(cameraInitialRotation.eulerAngles.y);
+            float zAngle = NormalizeAngle(cameraInitialRotation.eulerAngles.z);
+            float xRotation = Mathf.Clamp(xAngle + (mouseDelta.y * cameraSensitivityY), -70f, 70f);
+            float yRotation = Mathf.Clamp(yAngle - (mouseDelta.x * cameraSensitivityX), -180f, 180f);
+            float zRotation = zAngle;
+            myCinemachineCamera.transform.rotation = Quaternion.Euler(
+                xRotation,
+                yRotation,
+                zRotation
+            );
         }
 
+        // move the rocket with the camera (if enabled)
+        if (controlYMovement)
+        {
+            Vector3 currentRotation = transform.eulerAngles;
+            Vector3 cameraRotation = myCinemachineCamera.transform.eulerAngles;
+            transform.rotation = Quaternion.Euler(
+                currentRotation.x,      // keep current X
+                cameraRotation.y,       // match Y to camera
+                currentRotation.z       // keep current Z
+            );
+        }
     }
 
+    // normalize angle from -180 to 180 instead from 0 to -360
+    float NormalizeAngle(float angle)
+    {
+        angle = angle % 360f;
+        if (angle > 180f) angle -= 360f;
+        if (angle < -180f) angle += 360f;
+        return angle;
+    }
 }
