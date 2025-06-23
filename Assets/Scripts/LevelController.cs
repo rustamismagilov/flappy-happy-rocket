@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Net.Sockets;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -41,14 +41,21 @@ public class LevelController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        loadingController.gameObject.SetActive(true);
-        loadingController.StopLoading();
+        loadingController.DarkToTransparent(); // Show loading with animation
+
+        /* IMPORTANT!!! 
+        * AS SOON AS YOU WILL IMPLEMENT SEQUENCE WHICH WILL SHOW THE LOADING SCREEN OR GAME OVER SCREEN (E.G. WITH FINAL SCORE OR TIME) 
+        * FOR THIS PARTICULAR LEVEL, YOU SHOULD UNCOMMENT AND PUT THIS LINE IN THERE
+        loadingController.TransparentToDark();
+        */
+
         StartCoroutine(StartLevel());
     }
 
     // Update is called once per frame
     void Update()
     {
+
     }
 
     // bring the rocket in the start platform
@@ -66,6 +73,7 @@ public class LevelController : MonoBehaviour
         // reset camera and rocket rotation to the right position for moves
         myCinemachineCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
         rocket.transform.rotation = Quaternion.Euler(0, 0, 0);
+
         // bring the rocket to the platform
         rocket.transform.position = new Vector3(startPlatform.transform.position.x, startPlatform.transform.position.y + 7, startPlatform.transform.position.z);
         rocket.GetComponent<PlayerController>().thrustForced = true;
@@ -74,11 +82,11 @@ public class LevelController : MonoBehaviour
         // wait the time passed
         yield return new WaitForSeconds(timeBeforeStart);
 
-        // finish bring the rocket to start platform
+        // disable forced thrust
         rocket.GetComponent<PlayerController>().thrustForced = null;
         rocket.GetComponent<PlayerController>().thrustPowerForced = null;
 
-        // enable rocket commands
+        // enable player input again
         rocket.GetComponent<CollisionHandler>().enabled = true;
         rocket.GetComponent<PlayerController>().EnableMove();
         rocket.GetComponent<PlayerController>().EnableThrust();
@@ -92,6 +100,7 @@ public class LevelController : MonoBehaviour
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
     }
+
     // load next level
     void LoadNextLevel()
     {
@@ -114,8 +123,7 @@ public class LevelController : MonoBehaviour
         rocket.GetComponent<PlayerController>().enabled = false;
         Invoke(nameof(LoadNextLevel), loadNextLevelDelay);
 
-        loadingController.gameObject.SetActive(true);
-        loadingController.StartLoading();
+        loadingController.DarkToTransparent();
     }
 
     // when the lavel is failed
@@ -128,6 +136,6 @@ public class LevelController : MonoBehaviour
         Invoke(nameof(ReloadCurrentLevel), reloadCurrentLevelDelay);
 
         loadingController.gameObject.SetActive(true);
-        loadingController.StartLoading();
+        loadingController.DarkToTransparent();
     }
 }

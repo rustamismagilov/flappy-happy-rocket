@@ -1,51 +1,37 @@
-using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LoadingController : MonoBehaviour
 {
     Animator animator;
+    Image loadingImage;
 
-    bool isLoading = false;
-
-    // Awake is called once before the Start
     void Awake()
     {
         animator = GetComponent<Animator>();
     }
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
+        Canvas canvas = FindFirstObjectByType<Canvas>();
+        loadingImage = canvas.GetComponentInChildren<Image>(true);
+        //loadingImage.gameObject.SetActive(false);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void DarkToTransparent()
     {
+        //loadingImage.gameObject.SetActive(true);
+        animator.SetTrigger("isSceneLoaded");
     }
 
-    // start loading
-    public void StartLoading()
+    public void TransparentToDark()
     {
-        isLoading = true;
-        animator.SetBool("isLoading", isLoading);
-        enableCanvas();
+        animator.SetTrigger("isSceneUnloaded");
+        Invoke(nameof(HideImage), 1f);
     }
-    // stop loading
-    public void StopLoading()
+
+    void HideImage()
     {
-        isLoading = false;
-        animator.SetBool("isLoading", isLoading);
-        Invoke(nameof(disableCanvas), 1f);
-    }
-    // enable canvas
-    public void enableCanvas()
-    {
-        //this.enabled = true;
-        this.gameObject.SetActive(true);
-    }
-    // disable canvas
-    public void disableCanvas()
-    {
-        //this.enabled = false;
-        this.gameObject.SetActive(false);
+        loadingImage.gameObject.SetActive(false);
     }
 }
