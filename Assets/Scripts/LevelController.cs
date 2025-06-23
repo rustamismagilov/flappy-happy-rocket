@@ -17,6 +17,7 @@ public class LevelController : MonoBehaviour
     [SerializeField] float reloadCurrentLevelDelay = 2f;
     [SerializeField] AudioClip faildAudioClip;
 
+    LoadingController loadingController;
     CinemachineCamera myCinemachineCamera;
     GameObject rocket;
     GameObject startPlatform;
@@ -29,6 +30,7 @@ public class LevelController : MonoBehaviour
     // Awake is called once before the Start
     void Awake()
     {
+        loadingController = FindFirstObjectByType<LoadingController>();
         myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         rocket = (GameObject.FindWithTag("Player"));
         startPlatform = (GameObject.FindWithTag("Start"));
@@ -39,6 +41,8 @@ public class LevelController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        loadingController.gameObject.SetActive(true);
+        loadingController.StopLoading();
         StartCoroutine(StartLevel());
     }
 
@@ -87,8 +91,6 @@ public class LevelController : MonoBehaviour
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
         SceneManager.LoadScene(currentSceneIndex);
-        rocket.GetComponent<PlayerController>().enabled = true;
-        StartLevel();
     }
     // load next level
     void LoadNextLevel()
@@ -111,6 +113,9 @@ public class LevelController : MonoBehaviour
         finishAudioSource.PlayOneShot(successAudioClip);
         rocket.GetComponent<PlayerController>().enabled = false;
         Invoke(nameof(LoadNextLevel), loadNextLevelDelay);
+
+        loadingController.gameObject.SetActive(true);
+        loadingController.StartLoading();
     }
 
     // when the lavel is failed
@@ -121,5 +126,8 @@ public class LevelController : MonoBehaviour
         isCrashed = true;
         rocket.GetComponent<PlayerController>().enabled = false;
         Invoke(nameof(ReloadCurrentLevel), reloadCurrentLevelDelay);
+
+        loadingController.gameObject.SetActive(true);
+        loadingController.StartLoading();
     }
 }
