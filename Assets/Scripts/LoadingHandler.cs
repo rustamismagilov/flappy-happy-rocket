@@ -1,16 +1,15 @@
-using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class LoadingController : MonoBehaviour
+public class LoadingHandler : MonoBehaviour
 {
-    Animator animator;
+    [SerializeField] GameObject loadingObject;
 
     bool isLoading = false;
 
     // Awake is called once before the Start
     void Awake()
     {
-        animator = GetComponent<Animator>();
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -25,27 +24,30 @@ public class LoadingController : MonoBehaviour
     // start loading
     public void StartLoading()
     {
-        isLoading = true;
-        animator.SetBool("isLoading", isLoading);
         enableCanvas();
+        isLoading = true;
+        loadingObject.GetComponent<Image>().canvasRenderer.SetAlpha(0f);
+        loadingObject.GetComponent<Image>().CrossFadeAlpha(1f, 1f, false);
     }
     // stop loading
     public void StopLoading()
     {
+        enableCanvas();
         isLoading = false;
-        animator.SetBool("isLoading", isLoading);
+        loadingObject.GetComponent<Image>().canvasRenderer.SetAlpha(1f);
+        loadingObject.GetComponent<Image>().CrossFadeAlpha(0f, 1f, false);
         Invoke(nameof(disableCanvas), 1f);
     }
     // enable canvas
-    public void enableCanvas()
+    void enableCanvas()
     {
         //this.enabled = true;
-        this.gameObject.SetActive(true);
+        loadingObject.SetActive(true);
     }
     // disable canvas
-    public void disableCanvas()
+    void disableCanvas()
     {
         //this.enabled = false;
-        this.gameObject.SetActive(false);
+        loadingObject.SetActive(false);
     }
 }

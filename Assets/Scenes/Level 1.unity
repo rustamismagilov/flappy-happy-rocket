@@ -1247,18 +1247,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3198098165037610674, guid: 081a06255f8cf2b48a2914884c1f8c58, type: 3}
-      propertyPath: faildAudioClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 87da799a1582c8e448323e3449987623, type: 3}
-    - target: {fileID: 3198098165037610674, guid: 081a06255f8cf2b48a2914884c1f8c58, type: 3}
-      propertyPath: timeBeforeStart
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 3198098165037610674, guid: 081a06255f8cf2b48a2914884c1f8c58, type: 3}
-      propertyPath: successAudioClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 87da799a1582c8e448323e3449987623, type: 3}
     - target: {fileID: 3352181943002433935, guid: 081a06255f8cf2b48a2914884c1f8c58, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1313,11 +1301,11 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 410087041}
-  - {fileID: 330585546}
   - {fileID: 832575519}
+  - {fileID: 330585546}
+  - {fileID: 1530685752}
   - {fileID: 2246926206601890884}
   - {fileID: 2106786291}
   - {fileID: 63756008}
   - {fileID: 1399212532}
   - {fileID: 1072057574}
-  - {fileID: 1530685752}

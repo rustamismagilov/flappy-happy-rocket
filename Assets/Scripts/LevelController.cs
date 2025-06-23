@@ -1,5 +1,5 @@
 using System.Collections;
-using System.Net.Sockets;
+using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,7 +17,8 @@ public class LevelController : MonoBehaviour
     [SerializeField] float reloadCurrentLevelDelay = 2f;
     [SerializeField] AudioClip faildAudioClip;
 
-    LoadingController loadingController;
+    LoadingHandler loadingHandler;
+    CounterHandler counterHandler;
     CinemachineCamera myCinemachineCamera;
     GameObject rocket;
     GameObject startPlatform;
@@ -30,7 +31,8 @@ public class LevelController : MonoBehaviour
     // Awake is called once before the Start
     void Awake()
     {
-        loadingController = FindFirstObjectByType<LoadingController>();
+        loadingHandler = FindFirstObjectByType<LoadingHandler>();
+        counterHandler = FindFirstObjectByType<CounterHandler>();
         myCinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
         rocket = (GameObject.FindWithTag("Player"));
         startPlatform = (GameObject.FindWithTag("Start"));
@@ -41,8 +43,7 @@ public class LevelController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        loadingController.gameObject.SetActive(true);
-        loadingController.StopLoading();
+        loadingHandler.StopLoading();
         StartCoroutine(StartLevel());
     }
 
@@ -71,8 +72,11 @@ public class LevelController : MonoBehaviour
         rocket.GetComponent<PlayerController>().thrustForced = true;
         rocket.GetComponent<PlayerController>().thrustPowerForced = 800;
 
-        // wait the time passed
-        yield return new WaitForSeconds(timeBeforeStart);
+        // wait the time passed (except last 3 seconds)
+        yield return new WaitForSeconds(timeBeforeStart - 3);
+        StartCoroutine(counterHandler.RunCounter());
+        // wait the last 3 seconds until counter is finished
+        yield return new WaitForSeconds(3);
 
         // finish bring the rocket to start platform
         rocket.GetComponent<PlayerController>().thrustForced = null;
@@ -114,8 +118,7 @@ public class LevelController : MonoBehaviour
         rocket.GetComponent<PlayerController>().enabled = false;
         Invoke(nameof(LoadNextLevel), loadNextLevelDelay);
 
-        loadingController.gameObject.SetActive(true);
-        loadingController.StartLoading();
+        loadingHandler.StartLoading();
     }
 
     // when the lavel is failed
@@ -127,7 +130,6 @@ public class LevelController : MonoBehaviour
         rocket.GetComponent<PlayerController>().enabled = false;
         Invoke(nameof(ReloadCurrentLevel), reloadCurrentLevelDelay);
 
-        loadingController.gameObject.SetActive(true);
-        loadingController.StartLoading();
+        loadingHandler.StartLoading();
     }
 }
