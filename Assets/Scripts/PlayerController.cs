@@ -73,7 +73,9 @@ public class PlayerController : MonoBehaviour
     // on camera
     void OnCamera(InputValue value)
     {
-        isCameraControlActive = value.isPressed;
+        if (!myCinemachineCamera) return;
+
+            isCameraControlActive = value.isPressed;
         if (isCameraControlActive)
         {
             mouseInitialPosition = Mouse.current.position.ReadValue();
@@ -169,6 +171,8 @@ public class PlayerController : MonoBehaviour
     // enable camera rotation only with right click
     void UpdateCamera()
     {
+        if (!myCinemachineCamera) return;
+
         bool cameraControlActive = cameraEnabled ? isCameraControlActive : false;
 
         // move camera

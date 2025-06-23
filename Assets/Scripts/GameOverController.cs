@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class HomeController : MonoBehaviour
+public class GameOverController : MonoBehaviour
 {
     [SerializeField][Min(1)] float nextSceneDelay = 1f;
 
@@ -21,37 +21,26 @@ public class HomeController : MonoBehaviour
         loadingHandler.StopLoading();
         rocket.GetComponent<CollisionHandler>().enabled = false;
         rocket.GetComponent<PlayerController>().DisableMove();
-        rocket.GetComponent<PlayerController>().EnableThrust();
+        rocket.GetComponent<PlayerController>().DisableThrust();
         rocket.GetComponent<PlayerController>().DisableCamera();
     }
 
     // Update is called once per frame
     void Update()
     {
-
     }
 
-    // when play next button is clicked
-    public void OnPlayNextClick()
+    // when home button is clicked
+    public void OnHomeClick()
     {
+        //Debug.Log("OnHomeClick");
         loadingHandler.StartLoading();
-        Invoke(nameof(LoadNextLevel), nextSceneDelay);
-    }
-    // when list of levels button is clicked
-    public void OnLevelListClick()
-    {
-        Debug.Log("LevelListClick");
-    }
-    // when credits button is clicked
-    public void OnCreditsClick()
-    {
-        //Debug.Log("OnCreditsClick");
-        //SceneManager.LoadScene(0);
+        Invoke(nameof(LoadHomeScene), nextSceneDelay);
     }
 
     // load next level
-    void LoadNextLevel()
+    void LoadHomeScene()
     {
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(0);
     }
 }
