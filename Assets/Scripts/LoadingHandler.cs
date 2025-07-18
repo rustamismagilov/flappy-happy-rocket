@@ -5,7 +5,7 @@ public class LoadingHandler : MonoBehaviour
 {
     [SerializeField] GameObject loadingObject;
 
-    bool isLoading = false;
+    //bool isLoading = false;
 
     // Awake is called once before the Start
     void Awake()
@@ -24,16 +24,16 @@ public class LoadingHandler : MonoBehaviour
     // start loading
     public void StartLoading()
     {
+        //isLoading = true;
         enableCanvas();
-        isLoading = true;
         loadingObject.GetComponent<Image>().canvasRenderer.SetAlpha(0f);
         loadingObject.GetComponent<Image>().CrossFadeAlpha(1f, 1f, false);
     }
     // stop loading
     public void StopLoading()
     {
+        //isLoading = false;
         enableCanvas();
-        isLoading = false;
         loadingObject.GetComponent<Image>().canvasRenderer.SetAlpha(1f);
         loadingObject.GetComponent<Image>().CrossFadeAlpha(0f, 1f, false);
         Invoke(nameof(disableCanvas), 1f);
